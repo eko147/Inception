@@ -1,0 +1,82 @@
+#수정 필요
+
+version: "3"
+
+services:
+  mariadb:
+    image: mariadb
+    pull_policy: never
+    container_name: mariadb
+    build:
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
+      args:
+        DB_NAME: ${DB_NAME}
+        DB_USER: ${DB_USER}
+        DB_PASSWORD: ${DB_PASSWORD}
+        DB_HOST: ${DB_HOST}
+    restart: always
+    volumes:
+      - mariadb_volume:/var/lib/mysql
+    networks:
+      - my_network
+    hostname: mariadb
+    env_file:
+      - .env
+
+  wordpress:
+    depends_on:
+      - mariadb
+    image: wordpress
+    pull_policy: never
+    restart: always
+    container_name: wordpress
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+      args:
+        PHP_VERSION: 81
+        DB_NAME: ${DB_NAME}
+        DB_USER: ${DB_USER}
+        DB_PASSWORD: ${DB_PASSWORD}
+        DB_HOST: ${DB_HOST}
+    volumes:
+      - wordpress_volume:/var/www/html
+    networks:
+      - my_network
+    env_file:
+      - .env
+
+  nginx:
+    depends_on:
+      - wordpress
+    image: nginx
+    pull_policy: never
+    restart: always
+    container_name: nginx
+    build:
+      context: ./requirements/nginx
+      dockerfile: Dockerfile
+    volumes:
+      - wordpress_volume:/var/www/html
+    ports:
+      - "443:443"
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
+    name: my_network
+
+volumes:
+  wordpress_volume:
+    driver_opts:
+      o: bind
+      type: none
+      device: /home/seokchoi/data/wordpress
+  mariadb_volume:
+    driver_opts:
+      o: bind
+      type: none
+      device: /home/seokchoi/data/mariadb
