@@ -27,5 +27,5 @@ if [ ! -f /var/www/html/index.php ]; then
 fi 
 # fi는 셸 스크립트에서 조건문의 끝을 나타내는 키워드
 
-# /usr/sbin/php-fpm81 -F
+/usr/sbin/php-fpm81 -F
 # PHP-FPM 서버를 시작 WordPress의 동적 콘텐츠를 처리하기 위해 PHP-FPM이 사용

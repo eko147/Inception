@@ -21,18 +21,19 @@ RUN apk add --no-cache nginx openssl && \
 
 # SSL 키 및 인증서 생성 및 권한 변경
 RUN openssl req -newkey rsa:2048 -nodes \
-    -keyout /etc/nginx/ssl/private/seokchoi.42.fr.key \
-    -x509 -days 365 -out /etc/nginx/ssl/private/seokchoi.42.fr.crt \
-    -subj "/C=KR/ST=Seoul/O=42Seoul/OU=seokchoi/CN=inception/" && \
+    -keyout /etc/nginx/ssl/private/eunjiko.42.fr.key \
+    -x509 -days 365 -out /etc/nginx/ssl/private/eunjiko.42.fr.crt \
+    -subj "/C=KR/ST=Seoul/O=42Seoul/OU=eunjiko/CN=inception/" && \
     chown -R nginx:nginx /etc/nginx/ssl/private && \
-    chmod 600 /etc/nginx/ssl/private/seokchoi.42.fr.key /etc/nginx/ssl/private/seokchoi.42.fr.crt
+    chmod 600 /etc/nginx/ssl/private/eunjiko.42.fr.key /etc/nginx/ssl/private/eunjiko.42.fr.crt
 
 # EXPOSE 컨테이너가 실행될 때 오픈할 포트 번호를 지정
 EXPOSE 443
 
 # COPY 호스트 파일 시스템에서 파일이나 디렉토리를 컨테이너 내부로 복사 일반적으로 호스트에서 빌드 컨텍스트 내에 있는 파일이나 디렉토리를 복사하여 이미지에 포함시키는 데 사용
 # Nginx 설정 파일 복사
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY conf/nginx.conf /etc/nginx/http.d/default.conf
+
 # 정확하지 않음
 
 # CMD 컨테이너가 시작될 때 실행할 기본 명령어를 지정 CMD 명령어를 사용하여 컨테이너가 실행될 때 실행되는 기본 프로세스를 지정할 수 있음 Dockerfile에서 한 번만 사용될 수 있으며, 여러 개의 CMD가 있을 경우 마지막 CMD가 적용됨 일반적으로 Docker 컨테이너에서 실행될 응용 프로그램이나 서비스를 시작하는 명령어를 지정함

@@ -1,6 +1,7 @@
 #수정 필요
 
 version: "3"
+# 버전마다 작성 형식이 다름
 
 services:
   mariadb:
@@ -11,29 +12,29 @@ services:
       context: ./requirements/mariadb
       dockerfile: Dockerfile
       args:
-        DB_NAME: ${DB_NAME}
-        DB_USER: ${DB_USER}
-        DB_PASSWORD: ${DB_PASSWORD}
-        DB_HOST: ${DB_HOST}
-    restart: always
+        DB_NAME: ${DB_NAME}  # 데이터베이스 이름
+        DB_USER: ${DB_USER}  # 데이터베이스 사용자 이름
+        DB_PASSWORD: ${DB_PASSWORD}  # 데이터베이스 암호
+        DB_HOST: ${DB_HOST}  # 데이터베이스 호스트
+    restart: always  # 컨테이너 재시작 정책
     volumes:
-      - mariadb_volume:/var/lib/mysql
+      - mariadb_volume:/var/lib/mysql  # 마리아DB 데이터를 저장할 볼륨 마운트
     networks:
-      - my_network
-    hostname: mariadb
+      - my_network  # 컨테이너 간 통신에 사용할 네트워크
+    hostname: mariadb  # 컨테이너 호스트 이름
     env_file:
-      - .env
+      - .env  # 환경 변수 파일
 
   wordpress:
     depends_on:
-      - mariadb
-    image: wordpress
-    pull_policy: never
-    restart: always
+      - mariadb # mariadb 서비스에 의존
+    image: wordpress # 워드프레스 이미지 사용
+    pull_policy: never  # 이미지 항상 캐시하지 않음
+    restart: always # 컨테이너 재시작 정책
     container_name: wordpress
     build:
-      context: ./requirements/wordpress
-      dockerfile: Dockerfile
+      context: ./requirements/wordpress  # 워드프레스 Dockerfile 경로
+      dockerfile: Dockerfile  # 사용할 Dockerfile 이름
       args:
         PHP_VERSION: 81
         DB_NAME: ${DB_NAME}
@@ -41,42 +42,44 @@ services:
         DB_PASSWORD: ${DB_PASSWORD}
         DB_HOST: ${DB_HOST}
     volumes:
-      - wordpress_volume:/var/www/html
+      - wordpress_volume:/var/www/html # 워드프레스 파일을 저장할 볼륨 마운트
     networks:
-      - my_network
+      - my_network # 컨테이너 간 통신에 사용할 네트워크
     env_file:
-      - .env
+      - .env   # 환경 변수 파일
 
   nginx:
     depends_on:
-      - wordpress
-    image: nginx
-    pull_policy: never
-    restart: always
+      - wordpress  # wordpress 서비스에 의존
+    image: nginx # Nginx 이미지 사용
+    pull_policy: never # 이미지 항상 캐시하지 않음
+    restart: always # 컨테이너 재시작 정책
     container_name: nginx
     build:
-      context: ./requirements/nginx
-      dockerfile: Dockerfile
+      context: ./requirements/nginx # Nginx Dockerfile 경로
+      dockerfile: Dockerfile # 사용할 Dockerfile 이름
     volumes:
-      - wordpress_volume:/var/www/html
+      - wordpress_volume:/var/www/html  # Nginx 파일을 저장할 볼륨 마운트
     ports:
-      - "443:443"
+      - "443:443" # 호스트와 컨테이너 간 포트 매핑
     networks:
-      - my_network
+      - my_network # 컨테이너 간 통신에 사용할 네트워크
 
 networks:
   my_network:
-    driver: bridge
-    name: my_network
+    driver: bridge # 브리지 네트워크 사용
+    name: my_network  # 네트워크 이름
 
 volumes:
   wordpress_volume:
     driver_opts:
       o: bind
       type: none
-      device: /home/seokchoi/data/wordpress
+      device: /Users/eunjiko/data/wordpress  # 호스트 디렉토리 경로
+      # device: /home/eunjiko/data/wordpress  # 호스트 디렉토리 경로
   mariadb_volume:
     driver_opts:
-      o: bind
-      type: none
-      device: /home/seokchoi/data/mariadb
+      o: bind  # 호스트 디렉토리와 볼륨 바인딩
+      type: none # 호스트와 볼륨 사이의 파일 시스템 유형
+      device: /Users/eunjiko/data/mariadb # 호스트 디렉토리 경로
+      # device: /home/eunjiko/data/mariadb # 호스트 디렉토리 경로
