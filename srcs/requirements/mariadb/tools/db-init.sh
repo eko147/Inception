@@ -1,7 +1,7 @@
 # 수정필요 주석까지 같음 
 #다른 방법으로도 작성해보기
 
-#! /bin/sh 
+#! /bin/sh
 # 이게 뭐지
 
 if [ ! -d "/var/lib/mysql/mysql" ]; then

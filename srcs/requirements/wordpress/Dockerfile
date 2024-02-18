@@ -1,6 +1,6 @@
 # # 수정 필요
 
-# FROM alpine:3.17
+# FROM alpine:3.18
 
 # ARG PHP_VERSION=81 \
 # 	DB_NAME \
@@ -80,7 +80,7 @@
 # # 여기서는 tini를 통해 /bin/sh wp-install.sh 스크립트를 실행하여 WordPress를 설치
 # # tini는 부모 및 자식 프로세스 간의 시그널을 관리하는 작은 유틸리티이며, wp-install.sh 스크립트는 WordPress를 설치하는 작업을 수행
 
-FROM alpine:3.17
+FROM alpine:3.18
 
 ARG PHP_VERSION=81 \
 	DB_NAME \
