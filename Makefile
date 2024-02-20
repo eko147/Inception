@@ -33,7 +33,10 @@
 
 # .PHONY:		all clean fclean re up down build
 
-DATA_PATH = /Users/eunjiko/data
+# DATA_PATH = /Users/eunjiko/data
+DATA_PATH = /home/eunjiko/data
+
+# 볼볼륨 바인드해줄 폴더 위치
 
 all :
 	mkdir -p $(DATA_PATH)/wordpress
@@ -42,6 +45,7 @@ all :
 
 up:
 	docker-compose -f srcs/docker-compose.yml up -d
+# 짝대기 지우기
 
 build:
 	docker-compose -f srcs/docker-compose.yml --build

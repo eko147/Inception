@@ -75,11 +75,11 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: /Users/eunjiko/data/wordpress  # 호스트 디렉토리 경로
-      # device: /home/eunjiko/data/wordpress  # 호스트 디렉토리 경로
+      # device: /Users/eunjiko/data/wordpress  # 호스트 디렉토리 경로
+      device: /home/eunjiko/data/wordpress  # 호스트 디렉토리 경로
   mariadb_volume:
     driver_opts:
       o: bind  # 호스트 디렉토리와 볼륨 바인딩
       type: none # 호스트와 볼륨 사이의 파일 시스템 유형
-      device: /Users/eunjiko/data/mariadb # 호스트 디렉토리 경로
-      # device: /home/eunjiko/data/mariadb # 호스트 디렉토리 경로
+      # device: /Users/eunjiko/data/mariadb # 호스트 디렉토리 경로
+      device: /home/eunjiko/data/mariadb # 호스트 디렉토리 경로
