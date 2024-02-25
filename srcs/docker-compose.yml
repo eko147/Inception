@@ -1,48 +1,59 @@
 #수정 필요
 
+# docker
+# 
+
 version: "3"
-# 버전마다 작성 형식이 다름
+# 컴포즈 버전... 3가 제일 최신 그리고 안정적
 
 services:
   mariadb:
     image: mariadb
+    # 이미지를 다운받는 from 역할도 하는데 
+    # pull policy 이걸 써줘야 build안에 있는 도커파일이 우선으로 되고 image가 이미지의 네임으로서 쓰인다
     pull_policy: never
-    container_name: mariadb
+    container_name: mariadb 
+    # 컨테이너 네임은 마리아디비 
     build:
-      context: ./requirements/mariadb
+      context: ./requirements/mariadb 
+      # 밑에 안되면 주석 풀기 
       dockerfile: Dockerfile
-      args:
-        DB_NAME: ${DB_NAME}  # 데이터베이스 이름
-        DB_USER: ${DB_USER}  # 데이터베이스 사용자 이름
-        DB_PASSWORD: ${DB_PASSWORD}  # 데이터베이스 암호
-        DB_HOST: ${DB_HOST}  # 데이터베이스 호스트
+    build: requirements/mariadb
+      # args:
+      #   DB_NAME: ${DB_NAME}  # 데이터베이스 이름
+      #   DB_USER: ${DB_USER}  # 데이터베이스 사용자 이름
+      #   DB_PASSWORD: ${DB_PASSWORD}  # 데이터베이스 암호
+      #   DB_HOST: ${DB_HOST}  # 데이터베이스 호스트
     restart: always  # 컨테이너 재시작 정책
     volumes:
-      - mariadb_volume:/var/lib/mysql  # 마리아DB 데이터를 저장할 볼륨 마운트
+      - mariadb_volume:/var/lib/mysql  # 마리아DB 데이터를 저장할 볼륨 마운트 ... 위치가 만들때 알파인 안에 있는 디렉토리 위치
     networks:
       - my_network  # 컨테이너 간 통신에 사용할 네트워크
-    hostname: mariadb  # 컨테이너 호스트 이름
+    # hostname: mariadb  # 컨테이너 호스트 이름
     env_file:
       - .env  # 환경 변수 파일
 
   wordpress:
     depends_on:
-      - mariadb # mariadb 서비스에 의존
+      - mariadb # mariadb 서비스에 의존   워드프레스가 실행되려면 디비가 필요하다 그렇다면 마리아디비가 먼저 켜져야한다 그게 실행이 되야만 작동할수 있게 한다
     image: wordpress # 워드프레스 이미지 사용
     pull_policy: never  # 이미지 항상 캐시하지 않음
-    restart: always # 컨테이너 재시작 정책
     container_name: wordpress
+    restart: always # 컨테이너 재시작 정책
+    # build: ./requirements/wordpress
     build:
       context: ./requirements/wordpress  # 워드프레스 Dockerfile 경로
-      dockerfile: Dockerfile  # 사용할 Dockerfile 이름
+      # dockerfile: Dockerfile  # 사용할 Dockerfile 이름
       args:
-        PHP_VERSION: 81
+        PHP_VER: 81 
         DB_NAME: ${DB_NAME}
         DB_USER: ${DB_USER}
         DB_PASSWORD: ${DB_PASSWORD}
         DB_HOST: ${DB_HOST}
+        # env가 컨테이너 생성 후에 적용이 되는데 우리는 전 이미지가 빌드될때 필요해서
+        # env파일에 있는것을 도커 컴포즈에서 정의해놓은걸 도커 파일에 아그로 전달
     volumes:
-      - wordpress_volume:/var/www/html # 워드프레스 파일을 저장할 볼륨 마운트
+      - wp_volume:/var/www/html # 워드프레스 파일을 저장할 볼륨 마운트 밑의 홈 볼륨과 마운트
     networks:
       - my_network # 컨테이너 간 통신에 사용할 네트워크
     env_file:
@@ -50,36 +61,48 @@ services:
 
   nginx:
     depends_on:
-      - wordpress  # wordpress 서비스에 의존
+      - wordpress  # wordpress 서비스에 의존 엔진엑스가 실행되는것은...  브라우저 도메인 치는것, 엔진엑스 요청 -> 워드프레스에 요청을 보내고 -> db가 필요하면 db에 요청을 해서 새로운 동적html을 만들고 그것을 엔진엑스에 다시 보내서 엔진이 다시 브라우저에게
     image: nginx # Nginx 이미지 사용
     pull_policy: never # 이미지 항상 캐시하지 않음
-    restart: always # 컨테이너 재시작 정책
     container_name: nginx
-    build:
-      context: ./requirements/nginx # Nginx Dockerfile 경로
-      dockerfile: Dockerfile # 사용할 Dockerfile 이름
+    restart: always # 컨테이너 재시작 정책
+    # build:
+    #   context: ./requirements/nginx # Nginx Dockerfile 경로
+    #   dockerfile: Dockerfile # 사용할 Dockerfile 이름
+    build: ./requirements/nginx
     volumes:
-      - wordpress_volume:/var/www/html  # Nginx 파일을 저장할 볼륨 마운트
+      - wp_volume:/var/www/html  # Nginx 파일을 저장할 볼륨 마운트 섭젝에서 요구함 워드프레스와 공유하게끔
     ports:
       - "443:443" # 호스트와 컨테이너 간 포트 매핑
+      # 외부와 연결.. 
+      # NGINX 컨테이너가 포트 443을 통해서만 인프라에 들어갈 수 있다
+      # TLSv1.2 또는 TLSv1.3 프로토콜을 사용해야 한다는 것을 나타낸다
+      #https(433)
+
+  # 로컬이랑443 컨테이너443 이랑 똑같이 만들어준다
+  # vm에서firefox로 127.0.0.1==eunjiko.42.fr:443을 쳤는데, 어떻게 wordpress가 뜨냐 
+  # 로컬의 443 포트가 컨테이너 443 포트와 연결되어있다 443 = nginx
+
     networks:
       - my_network # 컨테이너 간 통신에 사용할 네트워크
 
-networks:
-  my_network:
-    driver: bridge # 브리지 네트워크 사용
-    name: my_network  # 네트워크 이름
 
 volumes:
-  wordpress_volume:
+  mariadb_volume:
+    driver_opts:
+      o: bind  # 호스트 디렉토리와 볼륨 바인딩 외부 볼륨 (메모리와)연결이 되는것을 바인드라고 한다 그래서 도커 컨테이너가 지워져도 살아있음
+      type: none # 호스트와 볼륨 사이의 파일 시스템 유형  바인드 쓰려면 기본 세팅 요소
+      device: /Users/eunjiko/data/mariadb # 호스트 디렉토리 경로
+      # device: /home/eunjiko/data/mariadb # 호스트 디렉토리 경로
+      # 컨테이너가 삭제되어도 마운트 되어 설치 된게 있음 예전 데이터가 남아있음
+  wp_volume:
     driver_opts:
       o: bind
       type: none
-      # device: /Users/eunjiko/data/wordpress  # 호스트 디렉토리 경로
-      device: /home/eunjiko/data/wordpress  # 호스트 디렉토리 경로
-  mariadb_volume:
-    driver_opts:
-      o: bind  # 호스트 디렉토리와 볼륨 바인딩
-      type: none # 호스트와 볼륨 사이의 파일 시스템 유형
-      # device: /Users/eunjiko/data/mariadb # 호스트 디렉토리 경로
-      device: /home/eunjiko/data/mariadb # 호스트 디렉토리 경로
+      device: /Users/eunjiko/data/wordpress  # 호스트 디렉토리 경로
+      # device: /home/eunjiko/data/wordpress  # 호스트 디렉토리 경로
+
+networks:
+  my_network:
+    name: my_network  # 네트워크 이름
+    driver: bridge # 브리지 네트워크 사용 -> 네트워크 설정 방법 기본적으로 bridge

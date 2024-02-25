@@ -82,52 +82,87 @@
 
 FROM alpine:3.18
 
-ARG PHP_VERSION=81 \
+ARG PHP_VER=81 \
 	DB_NAME \
     DB_USER \
     DB_PASSWORD \
     DB_HOST
 
+
+# PHP 란 워드프레스에 필요
+# RUN apk update && \
+# 	apk upgrade && \
+# 	apk add --no-cache \
+# 	php${PHP_VER} \
+# 	php${PHP_VER}-fpm \
+# 	php${PHP_VER}-mysqli \
+# 	php${PHP_VER}-json \
+# 	php${PHP_VER}-mysqlnd \
+# 	php${PHP_VER}-session \
+# 	php${PHP_VER}-curl \
+# 	php${PHP_VER}-iconv \
+# 	php${PHP_VER}-xmlreader \
+# 	php${PHP_VER}-json \
+# 	php${PHP_VER}-fileinfo \
+# 	php${PHP_VER}-pdo \
+# 	php${PHP_VER}-ctype \
+# 	php${PHP_VER}-phar \
+# 	php${PHP_VER}-pdo_mysql \
+# 	wget \
+# 	unzip \
+# 	iputils \
+# 	curl \
+# 	dumb-init && \
+	# sed -i "s|;listen.owner = nobody|listen.owner = nobody|g" /etc/php${PHP_VER}/php-fpm.d/www.conf && \
+	# sed -i "s|listen = 127.0.0.1:9000|listen = 0.0.0.0:9000|g" /etc/php${PHP_VER}/php-fpm.d/www.conf && \
+	# sed -i "s|;listen.group = nobody|listen.group = nobody|g" /etc/php${PHP_VER}/php-fpm.d/www.conf && \
+	# sed -i "s|;clear_env = no|clear_env = no|g" /etc/php${PHP_VER}/php-fpm.d/www.conf && \
+    # rm -f /var/cache/apk/*
+
 RUN apk update && \
 	apk upgrade && \
 	apk add --no-cache \
-	php${PHP_VERSION} \
-	php${PHP_VERSION}-fpm \
-	php${PHP_VERSION}-json \
-	php${PHP_VERSION}-curl \
-	php${PHP_VERSION}-mysqli \
-	php${PHP_VERSION}-mysqlnd \
-	php${PHP_VERSION}-session \
-	php${PHP_VERSION}-json \
-	php${PHP_VERSION}-iconv \
-	php${PHP_VERSION}-fileinfo \
-	php${PHP_VERSION}-xmlreader \
-	php${PHP_VERSION}-ctype \
-	php${PHP_VERSION}-pdo \
-	php${PHP_VERSION}-pdo_mysql \
-	php${PHP_VERSION}-phar \
+	php${PHP_VER} \
+	php${PHP_VER}-fpm \
+	php${PHP_VER}-json \
+	php${PHP_VER}-curl \
+	php${PHP_VER}-mysqli \
+	php${PHP_VER}-mysqlnd \
+	php${PHP_VER}-session \
+	php${PHP_VER}-json \
+	php${PHP_VER}-iconv \
+	php${PHP_VER}-fileinfo \
+	php${PHP_VER}-xmlreader \
+	php${PHP_VER}-ctype \
+	php${PHP_VER}-pdo \
+	php${PHP_VER}-pdo_mysql \
+	php${PHP_VER}-phar \
 	wget \
 	unzip \
 	curl \
 	iputils \
-	tini && \
-	sed -i "s|listen = 127.0.0.1:9000|listen = 0.0.0.0:9000|g" /etc/php${PHP_VERSION}/php-fpm.d/www.conf && \
-	sed -i "s|;listen.owner = nobody|listen.owner = nobody|g" /etc/php${PHP_VERSION}/php-fpm.d/www.conf && \
-	sed -i "s|;listen.group = nobody|listen.group = nobody|g" /etc/php${PHP_VERSION}/php-fpm.d/www.conf && \
-	sed -i "s|;clear_env = no|clear_env = no|g" /etc/php${PHP_VERSION}/php-fpm.d/www.conf && \
+	dumb-init && \
+	sed -i "s|listen = 127.0.0.1:9000|listen = 0.0.0.0:9000|g" /etc/php${PHP_VER}/php-fpm.d/www.conf && \
+	sed -i "s|;listen.owner = nobody|listen.owner = nobody|g" /etc/php${PHP_VER}/php-fpm.d/www.conf && \
+	sed -i "s|;listen.group = nobody|listen.group = nobody|g" /etc/php${PHP_VER}/php-fpm.d/www.conf && \
+	sed -i "s|;clear_env = no|clear_env = no|g" /etc/php${PHP_VER}/php-fpm.d/www.conf && \
     rm -f /var/cache/apk/*
 
 WORKDIR /var/www/html
 
+
+COPY tools/wp-create.sh /var/www/html
 COPY conf/wp-config.php.sh /var/www/html
-COPY tools/wp-install.sh /var/www/html
 
 EXPOSE 9000
-
+#wp-cli 설치 워드프레스 명령어들 모아놓은것들 설치
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
 	chmod +x wp-cli.phar && \
-	mv wp-cli.phar /usr/local/bin/wp
+	mv wp-cli.phar /usr/local/bin/wp && \
+	# cli 명령어를 bin/wp 로 옮겨 
+	sh wp-config.php.sh && rm wp-config.php.sh
+	# 이친구는 뭐지 실행하고 지워
 
-RUN sh wp-config.php.sh && rm wp-config.php.sh
+	#sh 안에 환경변수를 사용하는 명령어가 있는데 run이 돌아갈때는 컨테이너가 생성이 되기 전이기때문에 env파일이 등록이 안된 상태 그래서 환경 변수가 없으니까 미리 위처럼 아그를 넘겨 줘야함 
 
-CMD ["tini", "--", "/bin/sh", "wp-install.sh"]
+CMD ["dumb-init", "--", "/bin/sh", "wp-create.sh"]
