@@ -1,4 +1,4 @@
-# DATA_PATH = /home/seokchoi/data
+# DATA_PATH = /home/eunjiko/data
 
 # all :
 # 	sudo mkdir -p $(DATA_PATH)/wordpress

@@ -1,4 +1,4 @@
-# seokchoi's mariadb 참고 수정 필요
+
 FROM alpine:3.18
 
 # 빌드 시에 전달될 인수(argument)를 정의 /  Dockerfile 내에서 사용되는 변수를 정의하는 지시문
