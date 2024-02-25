@@ -38,7 +38,7 @@ DATA_PATH = /home/eunjiko/data
 
 # 볼볼륨 바인드해줄 폴더 위치
 
-all :
+all:
 	mkdir -p $(DATA_PATH)/wordpress
 	mkdir -p $(DATA_PATH)/mariadb
 	docker-compose -f srcs/docker-compose.yml up --build -d
@@ -46,6 +46,11 @@ all :
 up:
 	docker-compose -f srcs/docker-compose.yml up -d
 # 짝대기 지우기
+# -f 옵션 도커컴포즈가 파일을 지정하는 옵션
+#  docekr compose 도커 컨테이너를 정의하고 실행하기 위한 도구
+
+# docker-compose logs 모든 컨테이너의 로그
+# docker-compose ps 모든 컨테이너의 상태
 
 build:
 	docker-compose -f srcs/docker-compose.yml --build
