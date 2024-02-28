@@ -1,0 +1,75 @@
+version: "3"
+
+services:
+  mariadb:
+    image: mariadb
+    pull_policy: never
+    container_name: mariadb 
+    build:
+      context: ./requirements/mariadb 
+      dockerfile: Dockerfile
+    # build: requirements/mariadb
+    restart: always  
+    volumes:
+      - mariadb_volume:/var/lib/mysql  
+    networks:
+      - my_network  
+    env_file:
+      - .env 
+
+  wordpress:
+    depends_on:
+      - mariadb 
+    image: wordpress 
+    pull_policy: never 
+    container_name: wordpress
+    restart: always 
+    build:
+      context: ./requirements/wordpress 
+      args:
+        PHP_VER: 81 
+        DB_NAME: ${DB_NAME}
+        DB_USER: ${DB_USER}
+        DB_PASSWORD: ${DB_PASSWORD}
+        DB_HOST: ${DB_HOST}
+    volumes:
+      - wp_volume:/var/www/html
+    networks:
+      - my_network 
+    env_file:
+      - .env 
+
+  nginx:
+    depends_on:
+      - wordpress  
+    image: nginx 
+    pull_policy: never
+    container_name: nginx
+    restart: always
+    build: ./requirements/nginx
+    volumes:
+      - wp_volume:/var/www/html 
+    ports:
+      - "443:443" 
+    networks:
+      - my_network 
+
+
+volumes:
+  mariadb_volume:
+    driver_opts:
+      o: bind  
+      type: none 
+      # device: /Users/eunjiko/data/mariadb 
+      device: /home/eunjiko/data/mariadb 
+  wp_volume:
+    driver_opts:
+      o: bind
+      type: none
+      # device: /Users/eunjiko/data/wordpress 
+      device: /home/eunjiko/data/wordpress  # 호스트 디렉토리 경로
+
+networks:
+  my_network:
+    name: my_network 
+    driver: bridge 
