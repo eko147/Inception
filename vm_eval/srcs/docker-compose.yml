@@ -6,12 +6,11 @@ services:
     pull_policy: never
     container_name: mariadb 
     build:
-      context: ./requirements/mariadb 
+      context: ./requirements/mariadb
       dockerfile: Dockerfile
-    build: requirements/mariadb
     restart: always  
     volumes:
-      - mariadb_volume:/var/lib/mysql  
+      - mariadb_volume:/var/lib/mysql
     networks:
       - my_network  
     env_file:
@@ -60,14 +59,14 @@ volumes:
     driver_opts:
       o: bind  
       type: none 
-      device: /Users/eunjiko/data/mariadb 
-      # device: /home/eunjiko/data/mariadb 
+      # device: /Users/eunjiko/data/mariadb
+      device: /home/eunjiko/data/mariadb
   wp_volume:
     driver_opts:
       o: bind
       type: none
-      device: /Users/eunjiko/data/wordpress 
-      # device: /home/eunjiko/data/wordpress  # 호스트 디렉토리 경로
+      # device: /Users/eunjiko/data/wordpress 
+      device: /home/eunjiko/data/wordpress # 호스트 디렉토리 경로
 
 networks:
   my_network:
