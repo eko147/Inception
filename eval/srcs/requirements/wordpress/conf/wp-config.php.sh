@@ -1,4 +1,4 @@
-# #!/bin/sh
+#!/bin/sh
 
 if [ ! -f /var/www/html/wp-config.php ]; then
 cat << EOF > /var/www/html/wp-config.php
